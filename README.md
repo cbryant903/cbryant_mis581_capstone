@@ -9,7 +9,7 @@ The full paper is titled *Financial Intelligence and Human Trafficking Enforceme
 
 ## What the Script Does
 
-`capstone_analysis.py` integrates four publicly available datasets to test four formal hypotheses and two supplementary analyses:
+`CBryant_FinalProject_V2.py` integrates four publicly available datasets to test four formal hypotheses and two supplementary analyses:
 
 - **H1** — Contemporaneous correlation between SAR filings and federal sex trafficking prosecution counts (raw counts)
 - **H2** — T+1 lag analysis: SAR filings in year T as a predictor of prosecution counts in year T+1
@@ -57,7 +57,7 @@ pip install pandas scipy matplotlib numpy
 Place all five data files in the same directory as the script, then run:
 
 ```bash
-python capstone_analysis.py
+python CBryant_FinalProject_V2.py
 ```
 
 Output files are saved to an `output` folder in the same directory. The script creates the folder automatically if it does not exist.
