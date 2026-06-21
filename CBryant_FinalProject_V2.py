@@ -25,6 +25,12 @@ HOW TO USE
 4. All output files (CSVs and PNGs) are saved to OUTPUT_DIR.
    The script prints a summary of results to the console as it runs.
 
+NOTE ON SAR DATA
+****************
+SARStats.csv should contain all years 2020-2024. The script reads this
+single file for all SAR analysis including the extended lag section.
+No separate 2024 file is needed.
+
 OUTPUT FILES
 ************
 CSVs:
@@ -63,7 +69,6 @@ SAR_CSV_PATH       = "SARStats.csv"
 HTI_NEW_CASES_PATH = "HIT_New_Cases.csv"
 FBI_CSV_PATH       = "HT_2013_2024.csv"
 CENSUS_POP_PATH    = "census_state_pop_2020_2023.csv"
-SAR_2024_PATH      = "SARStats2024.csv"
 OUTPUT_DIR         = "output"
 # ************************************************************
 
@@ -80,7 +85,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # ************************************************************
-# 1. LOAD & CLEAN SAR DATA (2020-2023)
+# 1. LOAD & CLEAN SAR DATA (2020-2024)
 # ************************************************************
 print("Loading SAR data...")
 sar_raw = pd.read_csv(SAR_CSV_PATH, dtype=str)
@@ -225,7 +230,7 @@ top10 = (
     .reset_index()
 )
 top10.columns = ["State", "Total SARs"]
-print("\nTop 10 States - Cumulative SAR Count (2020-2023):")
+print("\nTop 10 States - Cumulative SAR Count (2020-2024):")
 print(top10.to_string(index=False))
 
 sar_annual.to_csv(os.path.join(OUTPUT_DIR, "sar_annual_summary.csv"), index=False)
@@ -533,29 +538,9 @@ print("\n" + "*" * 60)
 print("EXTENDED LAG ANALYSIS - SAR(T) vs. FBI ARRESTS(T+N)")
 print("*" * 60)
 
-sar24_raw = pd.read_csv(SAR_2024_PATH, dtype=str)
-sar24_raw.columns = [c.strip() for c in sar24_raw.columns]
-sar24_raw["Count"] = (
-    sar24_raw["Count"]
-    .astype(str)
-    .str.replace(",", "", regex=False)
-    .str.strip()
-)
-sar24_raw["Count"] = pd.to_numeric(sar24_raw["Count"], errors="coerce")
-sar24_raw["Year Month"] = sar24_raw["Year Month"].str.strip()
+# Use the full SAR dataset (2020-2024) already loaded in section 1
+sar_full = sar[["state", "year", "sar_count"]].copy()
 
-sar24 = sar24_raw[
-    (sar24_raw["Instrument"]   == "[Total]") &
-    (sar24_raw["Regulator"]    == "[Total]") &
-    (sar24_raw["Relationship"] == "[Total]") &
-    (sar24_raw["Product"]      == "[Total]") &
-    (~sar24_raw["State"].isin(["[Total]", "Unknown"])) &
-    (sar24_raw["Year Month"]   == "2024")
-][["Year Month", "State", "Count"]].copy()
-sar24 = sar24.rename(columns={"Year Month": "year", "State": "state", "Count": "sar_count"})
-sar24["year"] = 2024
-
-sar_full = pd.concat([sar[["state", "year", "sar_count"]], sar24], ignore_index=True)
 print(f"\nFull SAR dataset (2020-2024): {len(sar_full)} state-year observations")
 print("\nNational totals by year:")
 for yr, tot in sar_full.groupby("year")["sar_count"].sum().items():
@@ -625,7 +610,7 @@ plt.close()
 # Figure 3 - Top 10 states by cumulative SAR count
 fig, ax = plt.subplots(figsize=(9, 5))
 ax.barh(top10["State"][::-1], top10["Total SARs"][::-1], color="#1a9641", edgecolor="white")
-ax.set_title("Top 10 States: Cumulative HT SAR Filings 2020-2023",
+ax.set_title("Top 10 States: Cumulative HT SAR Filings 2020-2024",
              fontsize=13, fontweight="bold")
 ax.set_xlabel("Total SAR Filings")
 ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
